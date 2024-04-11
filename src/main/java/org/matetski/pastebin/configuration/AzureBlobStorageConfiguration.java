@@ -1,4 +1,4 @@
-package org.matetski.pastebin.microservice.blobstorage;
+package org.matetski.pastebin.configuration;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
