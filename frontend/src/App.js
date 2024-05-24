@@ -1,8 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import EditPage from "./EditPage";
-import MainPage from "./MainPage";
+import MainPage from "./mainpage/MainPage";
 import ErrorPage from "./ErrorPage";
 
 function App() {
