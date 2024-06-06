@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {Alert, AlertLink, Button, Dropdown, DropdownButton} from "react-bootstrap";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import './MainPage.css';
-import * as data from './DataPlaceholder.json';
+import {useParams} from "react-router-dom";
 
 const MainPage = () => {
-    const [filename, setFilename] = useState("");
-    const [filecontent, setFilecontent] = useState("");
-
+    const { params } = useParams();
+    const [fileContent, setFileContent] = useState("");
     const files = [
-        {Filename: "Example bin 1.", Filecontent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."},
-        {Filename: "Example bin 2.", Filecontent: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure."},
+        {Filename: "Example bin 1.", fileContent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."},
+        {Filename: "Example bin 2.", fileContent: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure."},
     ];
 
     const handleSelect = (key) => {
-        setFilename(files[key].Filename);
-        setFilecontent(files[key].Filecontent);
-        console.log(filecontent)
+        setFileContent(files[key].fileContent);
+        console.log(fileContent)
     };
 
     async function handleLogin() {
@@ -37,11 +35,8 @@ const MainPage = () => {
                 <div className="edit-box">
                     <Alert variant="warning" onClick={handleLogin}>If you want to test application in live,
                         please <AlertLink>log in</AlertLink> using GitHub oauth2. </Alert>
-                    <h6>File name:</h6>
-                    <textarea className="form-control" rows="1">{filename}</textarea>
-                    <br></br>
-                    <h6>File content:</h6>
-                    <textarea className="form-control" rows="5">{filecontent}</textarea>
+                    <h6>Your pasteBin content:</h6>
+                    <textarea id="file-content-textarea" className="form-control" rows="7">{fileContent}</textarea>
                     <div className="tool-box">
                         <ButtonGroup aria-label="Basic example">
                             <Button variant="secondary">Save</Button>
@@ -49,7 +44,7 @@ const MainPage = () => {
                             <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown"
                                             variant="secondary" onSelect={handleSelect}>
                                 {files.map((file, index) => (
-                                    <Dropdown.Item eventKey={index}>{file.Filename}</Dropdown.Item>
+                                    <Dropdown.Item onSelect={handleSelect} eventKey={index}>{file.Filename}</Dropdown.Item>
                                 ))}
                             </DropdownButton>
                             <Button variant="secondary">Log out</Button>
@@ -58,7 +53,7 @@ const MainPage = () => {
 
                 </div>
 
-                <Alert variant="info">We use oauth2 login only to limit application load. This site has been created for demonstration purposes only. </Alert>
+                <Alert variant="info">We use oauth2 login only to limit application load. This site has been created for demonstration purposes only. Read more about project...</Alert>
             </div>
         </div>
     )
