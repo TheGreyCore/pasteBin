@@ -35,9 +35,9 @@ public class BinDeleterConfiguration {
     /**
      * Scheduled task for deleting expired data.
      * This method is annotated with @Scheduled to indicate that it is a scheduled task.
-     * The cron expression "0 23 50 * * ?" specifies running code every day at 23.50 by Estonian time.
+     * The cron expression "0 50 23 * * ?" specifies running code every day at 23.50 by Estonian time.
      */
-    @Scheduled(cron = "0 23 50 * * ?", zone = "EET")
+    @Scheduled(cron = "0 50 23 * * ?", zone = "EET")
     public void deleteExpiryDate(){
         logger.info(storageService.checkExpiryData());
     }

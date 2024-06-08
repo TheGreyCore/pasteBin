@@ -1,24 +1,22 @@
-package org.matetski.pastebin.representations;
+package org.matetski.pastebin.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class CreateNewBinRequestRepresentation {
+public class CreateNewBinRequestDTO {
     private String body;
-    private String identificator;
     private Integer expireTimeInDays;
 
     public boolean isValid(){
-        return body != null && identificator != null && expireTimeInDays != null;
+        return body != null && expireTimeInDays != null;
     }
 
     @Override
     public String toString() {
         return "RequestTemplate{" +
                 "body='" + body + '\'' +
-                ", identificator='" + identificator + '\'' +
                 ", expireTime=" + expireTimeInDays +
                 '}';
     }

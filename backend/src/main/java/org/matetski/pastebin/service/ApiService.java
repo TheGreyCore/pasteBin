@@ -1,12 +1,14 @@
 package org.matetski.pastebin.service;
 
-import org.matetski.pastebin.representations.CreateNewBinRequestRepresentation;
+import org.matetski.pastebin.repository.StorageRepository;
+import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Base64;
+import java.util.*;
 
 /**
  * Service class for handling API related operations.
@@ -25,42 +27,78 @@ public class ApiService {
     private final BlobService blobService;
 
     /**
+     * StorageRepository instance for performing actions related to the storage database.
+     */
+    private final StorageRepository storageRepository;
+
+    /**
      * Constructor for ApiService.
      * @param storageService An instance of StorageService.
      * @param blobService An instance of BlobService.
      */
-    public ApiService(StorageService storageService, BlobService blobService) {
+    public ApiService(StorageService storageService, BlobService blobService, StorageRepository storageRepository) {
         this.storageService = storageService;
         this.blobService = blobService;
+        this.storageRepository = storageRepository;
     }
 
     /**
      * Method for creating a new bin.
-     * @param request A request representation for creating a new bin.
+     *
+     * @param request   A request representation for creating a new bin.
+     * @param principal principal of logged user.
      * @return A ResponseEntity with the result of the operation.
      */
-    public ResponseEntity<String> createNewBin(CreateNewBinRequestRepresentation request) {
-        if (!storageService.userCanCreateMore(request.getIdentificator())) return ResponseEntity.accepted().body("User can not create more bins!");
+    public ResponseEntity<String> createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) {
+        if (!storageService.userCanCreateMore(principal.getAttribute("sub"))) return ResponseEntity.accepted().body("User can not create more bins!");
 
         LocalDate expiryDate = LocalDate.now().plusDays(request.getExpireTimeInDays());
         String fileName = blobService.createBlobFile(request.getBody());
         if (fileName == null) return ResponseEntity.internalServerError().body("Blob wasn't created!");
-        storageService.createStorage(fileName, request.getIdentificator(), expiryDate);
+        storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
         String encodedURL = new String(Base64.getEncoder().encode(fileName.getBytes()));
 
         return ResponseEntity.ok().body("Was created with url" + encodedURL);
     }
 
-
     /**
      * Method for getting a bin by URL.
      * @param url The URL of the bin to retrieve.
-     * @return A ResponseEntity with the result of the operation.
+     * @return    A ResponseEntity with the result of the operation.
      * @throws IOException If an I/O error occurs. TODO: Better exception handling
      */
     public ResponseEntity<String> getBinByURL(String url) throws IOException {
         String decodedURL = new String(Base64.getDecoder().decode(url));
         String body = blobService.readBlobFile(decodedURL);
         return ResponseEntity.ok().body(body);
+    }
+
+    /**
+     * Method for getting user data, include first and second name, openid and list of bins names that saved by user.
+     * @param principal principal of logged user.
+     * @return A ResponseEntity with of data described above.
+     */
+    public ResponseEntity<Map<String, Object>> getUserData(OAuth2User principal) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("first_name", principal.getAttribute("given_name"));
+        response.put("family_name", principal.getAttribute("family_name"));
+
+        Object openId = principal.getAttribute("sub");
+        if (openId == null) {
+            throw new RuntimeException("openId not found!");
+        }
+        response.put("openid", openId);
+
+        Optional<List<String>> optionalAllBins = storageRepository.findAllByIndificator((String) openId);
+        List<String> allBins;
+        if(optionalAllBins.isPresent())
+        {
+            allBins = optionalAllBins.get();
+            response.put("binNames", allBins);
+        }
+
+        System.out.println(response);
+
+        return ResponseEntity.ok().body(response);
     }
 }
