@@ -16,7 +16,8 @@ public class SecurityConfiguration{
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/oauth2/authorization/google").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("http://localhost:8080/api/user")

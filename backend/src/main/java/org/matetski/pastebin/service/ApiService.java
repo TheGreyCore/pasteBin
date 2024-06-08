@@ -1,7 +1,7 @@
 package org.matetski.pastebin.service;
 
 import org.matetski.pastebin.repository.StorageRepository;
-import org.matetski.pastebin.representations.CreateNewBinRequestRepresentation;
+import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -44,16 +44,18 @@ public class ApiService {
 
     /**
      * Method for creating a new bin.
-     * @param request A request representation for creating a new bin.
+     *
+     * @param request   A request representation for creating a new bin.
+     * @param principal principal of logged user.
      * @return A ResponseEntity with the result of the operation.
      */
-    public ResponseEntity<String> createNewBin(CreateNewBinRequestRepresentation request) {
-        if (!storageService.userCanCreateMore(request.getIdentificator())) return ResponseEntity.accepted().body("User can not create more bins!");
+    public ResponseEntity<String> createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) {
+        if (!storageService.userCanCreateMore(principal.getAttribute("sub"))) return ResponseEntity.accepted().body("User can not create more bins!");
 
         LocalDate expiryDate = LocalDate.now().plusDays(request.getExpireTimeInDays());
         String fileName = blobService.createBlobFile(request.getBody());
         if (fileName == null) return ResponseEntity.internalServerError().body("Blob wasn't created!");
-        storageService.createStorage(fileName, request.getIdentificator(), expiryDate);
+        storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
         String encodedURL = new String(Base64.getEncoder().encode(fileName.getBytes()));
 
         return ResponseEntity.ok().body("Was created with url" + encodedURL);
@@ -62,7 +64,7 @@ public class ApiService {
     /**
      * Method for getting a bin by URL.
      * @param url The URL of the bin to retrieve.
-     * @return A ResponseEntity with the result of the operation.
+     * @return    A ResponseEntity with the result of the operation.
      * @throws IOException If an I/O error occurs. TODO: Better exception handling
      */
     public ResponseEntity<String> getBinByURL(String url) throws IOException {

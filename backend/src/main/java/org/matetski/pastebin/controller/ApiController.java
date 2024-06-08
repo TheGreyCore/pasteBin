@@ -1,6 +1,6 @@
 package org.matetski.pastebin.controller;
 
-import org.matetski.pastebin.representations.CreateNewBinRequestRepresentation;
+import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
 import org.matetski.pastebin.service.ApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,13 +31,12 @@ public class ApiController {
 
     /**
      * Endpoint for creating a new bin.
-     * This method is annotated with @PostMapping to indicate that it is a POST request.
-     * @param request A request representation for creating a new bin.
+     * @param requestDTO A request DTO for creating a new bin.
      * @return A ResponseEntity with the result of the operation.
      */
     @PostMapping("/createNewBin")
-    private ResponseEntity<String> createNewBin(@RequestBody CreateNewBinRequestRepresentation request){
-        return apiService.createNewBin(request);
+    private ResponseEntity<String> createNewBin(@RequestBody CreateNewBinRequestDTO requestDTO, @AuthenticationPrincipal OAuth2User principal){
+        return apiService.createNewBin(requestDTO, principal);
     }
 
     /**
