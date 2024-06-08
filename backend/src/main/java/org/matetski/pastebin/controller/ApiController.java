@@ -49,4 +49,10 @@ public class ApiController {
     private ResponseEntity<String> getBinByURL(@RequestParam String url) throws IOException {
         return apiService.getBinByURL(url);
     }
+
+    @GetMapping("/user")
+    private ResponseEntity<String> getUserData(){
+        System.out.println("123");
+        return ResponseEntity.ok().body("Ok");
+    }
 }
