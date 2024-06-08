@@ -19,4 +19,7 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
 
     @Query("DELETE FROM Storage WHERE blobFileName = ?1")
     void deleteByBlobName(String blobName);
+
+    @Query("SELECT blobFileName FROM Storage WHERE uniqIdentificatorOfCreator = ?1")
+    Optional<List<String>> findAllByIndificator(String uniqIdentificatorOfCreator);
 }

@@ -3,6 +3,8 @@ package org.matetski.pastebin.controller;
 import org.matetski.pastebin.representations.CreateNewBinRequestRepresentation;
 import org.matetski.pastebin.service.ApiService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -50,9 +52,9 @@ public class ApiController {
         return apiService.getBinByURL(url);
     }
 
+
     @GetMapping("/user")
-    private ResponseEntity<String> getUserData(){
-        System.out.println("123");
-        return ResponseEntity.ok().body("Ok");
+    private ResponseEntity<?> getUserData(@AuthenticationPrincipal OAuth2User principal){
+        return apiService.getUserData(principal);
     }
 }
