@@ -18,7 +18,7 @@ const MainPage = () => {
     };
 
     async function handleLogin() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/github";
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
     }
 
     return(
@@ -34,7 +34,7 @@ const MainPage = () => {
                 </div>
                 <div className="edit-box">
                     <Alert variant="warning" onClick={handleLogin}>If you want to test application in live,
-                        please <AlertLink>log in</AlertLink> using GitHub oauth2. </Alert>
+                        please <AlertLink>log in</AlertLink> using Google oauth2. </Alert>
                     <h6>Your pasteBin content:</h6>
                     <textarea id="file-content-textarea" className="form-control" rows="7">{fileContent}</textarea>
                     <div className="tool-box">

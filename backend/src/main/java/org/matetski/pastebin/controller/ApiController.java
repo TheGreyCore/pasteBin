@@ -35,7 +35,7 @@ public class ApiController {
      * @return A ResponseEntity with the result of the operation.
      */
     @PostMapping("/createNewBin")
-    private ResponseEntity<String> createNewBin(@RequestBody CreateNewBinRequestDTO requestDTO, @AuthenticationPrincipal OAuth2User principal){
+    private ResponseEntity<?> createNewBin(@RequestBody CreateNewBinRequestDTO requestDTO, @AuthenticationPrincipal OAuth2User principal){
         return apiService.createNewBin(requestDTO, principal);
     }
 

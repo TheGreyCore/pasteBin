@@ -49,16 +49,16 @@ public class ApiService {
      * @param principal principal of logged user.
      * @return A ResponseEntity with the result of the operation.
      */
-    public ResponseEntity<String> createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) {
+    public ResponseEntity<?> createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) {
         if (!storageService.userCanCreateMore(principal.getAttribute("sub"))) return ResponseEntity.accepted().body("User can not create more bins!");
 
         LocalDate expiryDate = LocalDate.now().plusDays(request.getExpireTimeInDays());
         String fileName = blobService.createBlobFile(request.getBody());
         if (fileName == null) return ResponseEntity.internalServerError().body("Blob wasn't created!");
-        storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
         String encodedURL = new String(Base64.getEncoder().encode(fileName.getBytes()));
+        storageService.createStorage(encodedURL, principal.getAttribute("sub"), expiryDate);
 
-        return ResponseEntity.ok().body("Was created with url" + encodedURL);
+        return ResponseEntity.ok().body(Collections.singletonMap("url", encodedURL));
     }
 
     /**
@@ -96,8 +96,6 @@ public class ApiService {
             allBins = optionalAllBins.get();
             response.put("binNames", allBins);
         }
-
-        System.out.println(response);
 
         return ResponseEntity.ok().body(response);
     }

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import {Button, Dropdown, DropdownButton} from "react-bootstrap";
+import {useParams} from "react-router-dom";
 
 const EditPage = () => {
+    let params = useParams();
     const [data, setData] = useState(null);
     const [fileName, setFileName] = useState(null);
     const [fileContent, setFileContent] = useState(null);
 
     useEffect(() => {
         fetch(
-            'http://localhost:8080/user',
+            'http://localhost:8080/api/user',
             {method: 'GET', credentials: 'include'}
         ).then((res) => { return res.json();})
             .then((responseData) => {
@@ -37,6 +39,12 @@ const EditPage = () => {
         console.log(fileName);
         console.log(fileContent);
         // TODO: await fetch to backend to save bin
+
+        await fetch(
+            'http://localhost:8080/logout',
+            { method: 'POST', redirect: "follow", credentials: 'include'})
+        setData(null);
+
     }
 
     const handleDelete = async () => {

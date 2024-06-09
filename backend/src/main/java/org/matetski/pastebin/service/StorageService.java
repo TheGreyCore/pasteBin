@@ -40,7 +40,7 @@ public class StorageService{
      * @return true if the user can create more storage, false otherwise.
      */
     public boolean userCanCreateMore(String uniqIdentificator){
-        return storageRepository.countUserData(uniqIdentificator) < 3;
+        return storageRepository.countUserData(uniqIdentificator) < 100; // TODO: Change to 3
     }
 
     /**
