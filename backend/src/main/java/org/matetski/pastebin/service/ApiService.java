@@ -1,12 +1,15 @@
 package org.matetski.pastebin.service;
 
+import org.matetski.pastebin.dto.UpdateBlobFileDTO;
 import org.matetski.pastebin.repository.StorageRepository;
 import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -53,12 +56,25 @@ public class ApiService {
         if (!storageService.userCanCreateMore(principal.getAttribute("sub"))) return ResponseEntity.accepted().body("User can not create more bins!");
 
         LocalDate expiryDate = LocalDate.now().plusDays(request.getExpireTimeInDays());
-        String fileName = blobService.createBlobFile(request.getBody());
-        if (fileName == null) return ResponseEntity.internalServerError().body("Blob wasn't created!");
-        String encodedURL = new String(Base64.getEncoder().encode(fileName.getBytes()));
-        storageService.createStorage(encodedURL, principal.getAttribute("sub"), expiryDate);
 
-        return ResponseEntity.ok().body(Collections.singletonMap("url", encodedURL));
+        String fileName = generateFilename();
+        boolean blobWasCreated = blobService.createBlobFile(request.getBody(), fileName);
+        if (!blobWasCreated) return ResponseEntity.internalServerError().body(Collections.singletonMap("error",  "Blob wasn't created!"));
+        storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
+
+        return ResponseEntity.ok().body(Collections.singletonMap("url", fileName));
+    }
+
+    /**
+     * Generates a filename for a new blob file.
+     *
+     * @return The generated filename.
+     */
+    private static String generateFilename() {
+        long timestamp = Instant.now().toEpochMilli();
+        int randomNumber = new Random().nextInt(9000) + 1000;
+        String fileName = timestamp + "_" + randomNumber;
+        return new String(Base64.getEncoder().encode(fileName.getBytes()));
     }
 
     /**
@@ -67,10 +83,9 @@ public class ApiService {
      * @return    A ResponseEntity with the result of the operation.
      * @throws IOException If an I/O error occurs. TODO: Better exception handling
      */
-    public ResponseEntity<String> getBinByURL(String url) throws IOException {
-        String decodedURL = new String(Base64.getDecoder().decode(url));
-        String body = blobService.readBlobFile(decodedURL);
-        return ResponseEntity.ok().body(body);
+    public ResponseEntity<Map<String, String>> getBinByURL(String url) throws IOException {
+        String body = blobService.readBlobFile(url);
+        return ResponseEntity.ok().body(Collections.singletonMap("body", body));
     }
 
     /**
@@ -98,5 +113,17 @@ public class ApiService {
         }
 
         return ResponseEntity.ok().body(response);
+    }
+
+    public ResponseEntity<?> updateBlob(UpdateBlobFileDTO updateBlobFileDTO, OAuth2User principal) {
+        // Check if user can update this blob
+        String userId = principal.getAttribute("sub");
+        if(!Objects.equals(userId, storageRepository.findOwnerByBlobFileName(updateBlobFileDTO.getFileName()))){
+            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        boolean wasUpdated = blobService.updateBlobFile(updateBlobFileDTO);
+        if(wasUpdated) return ResponseEntity.ok().body("ok");
+        else return ResponseEntity.internalServerError().body("Not ok :(");
     }
 }

@@ -5,8 +5,7 @@ import {useParams} from "react-router-dom";
 
 const EditPage = () => {
     let params = useParams();
-    const [data, setData] = useState(null);
-    const [fileName, setFileName] = useState(null);
+    const [userData, setUserData] = useState(null);
     const [fileContent, setFileContent] = useState(null);
 
     useEffect(() => {
@@ -15,9 +14,16 @@ const EditPage = () => {
             {method: 'GET', credentials: 'include'}
         ).then((res) => { return res.json();})
             .then((responseData) => {
-            setData(responseData)})
+            setUserData(responseData)})
             .catch(error => handleErrors(error));
-    }, []);
+        fetch(
+            "http://localhost:8080/api/getBinByURL?url=" + params.binURL,
+            {method: 'GET'}
+        ).then((res) => { return res.json();})
+            .then((responseData) => {
+                setFileContent(responseData.body)})
+            .catch(error => handleErrors(error));
+    }, [params.binURL]);
 
     const handleErrors = (error) => {
         console.error('Error:', error);
@@ -28,33 +34,48 @@ const EditPage = () => {
         await fetch(
             'http://localhost:8080/logout',
             { method: 'POST', redirect: "follow", credentials: 'include'})
-            setData(null);
+            setUserData(null);
             window.location.href = "/";
     }
 
     const handleSave = async () => {
-        setFileName(document.getElementById("filename-textarea").value);
-        setFileContent(document.getElementById("content-textarea").value);
+        //setFileContent(document.getElementById("content-textarea").value);
         // Just for debbuging TODO: Replace
-        console.log(fileName);
         console.log(fileContent);
         // TODO: await fetch to backend to save bin
+        const url = 'http://localhost:8080/api/updateBlob';
+        const data = {
+            body: fileContent,
+            fileName: params.binURL,
+        };
 
-        await fetch(
-            'http://localhost:8080/logout',
-            { method: 'POST', redirect: "follow", credentials: 'include'})
-        setData(null);
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                credentials: 'include',
+                redirect: 'follow',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const responseData = await response.json();
+            console.log(responseData)
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
     const handleDelete = async () => {
         document.getElementById("filename-textarea").value = '';
         document.getElementById("content-textarea").value = '';
-        setFileName(null);
         setFileContent(null);
 
         // Just for debbuging TODO: Replace
-        console.log(fileName);
         console.log(fileContent);
         // TODO: await fetch to backend to delete bin
     }
@@ -62,15 +83,21 @@ const EditPage = () => {
     return (
         <div>
             <div className="content-box">
-                <h1 className="">Welcome, {data ? data.name: <>Unknown</>}!</h1>
-                <h6>File name:</h6>
-                <textarea className="form-control" id="filename-textarea" rows="1" ></textarea>
+                <h1 className="">Welcome, {userData ? userData.first_name : <>Unknown</>}!</h1>
+                <hr></hr>
                 <h6>File content:</h6>
-                <textarea className="form-control" id="content-textarea" rows="5"></textarea>
+                <textarea
+                    className="form-control"
+                    id="content-textarea"
+                    rows="5"
+                    value={fileContent}
+                    onChange={e => setFileContent(e.target.value)}
+                />
                 <ButtonGroup aria-label="Basic example">
                     <Button variant="secondary" onClick={handleSave}>Save</Button>
                     <Button variant="secondary" onClick={handleDelete}>Delete</Button>
-                    <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown" variant="secondary">
+                    <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown"
+                                    variant="secondary">
                         {/*TODO: Get all saved bins and make dropdown link for them*/}
                         <Dropdown.Item eventKey="1">Dropdown link</Dropdown.Item>
                         <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>

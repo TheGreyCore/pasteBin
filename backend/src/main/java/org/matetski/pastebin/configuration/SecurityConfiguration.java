@@ -18,12 +18,12 @@ public class SecurityConfiguration{
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/oauth2/authorization/google").permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/api/createNewBin").permitAll()
+                        .requestMatchers("/api/getBinByURL**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("http://localhost:3000/successfully")
+                        .defaultSuccessUrl("http://localhost:3000/profile")
                         .failureUrl("http://localhost:8080/")
                 );
         return http.build();

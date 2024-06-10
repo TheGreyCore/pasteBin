@@ -4,13 +4,12 @@ package org.matetski.pastebin.service;
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import org.matetski.pastebin.dto.UpdateBlobFileDTO;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InaccessibleObjectException;
-import java.time.Instant;
-import java.util.Random;
 
 /**
  * Service class for managing blobs in Azure Blob Storage.
@@ -39,12 +38,19 @@ public class BlobService {
     /**
      * Updates the content of a blob file.
      *
-     * @param fileName The name of the file.
-     * @param body The new content for the file.
+     * @param updateBlobFileDTO Represent an request DTO.
+     * @return
      */
-    public void updateBlobFile(String fileName, String body){
-        BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
-        blobClient.upload(BinaryData.fromString(body), true);
+    public boolean updateBlobFile(UpdateBlobFileDTO updateBlobFileDTO){
+        try {
+            System.out.println(updateBlobFileDTO.getFileName());
+            System.out.println(updateBlobFileDTO.getBody());
+            BlobClient blobClient = blobContainerClient.getBlobClient(updateBlobFileDTO.getFileName() + ".txt");
+            blobClient.upload(BinaryData.fromString(updateBlobFileDTO.getBody()), true);
+            return true;
+        } catch (Exception e){
+            return false;
+        }
     }
 
     /**
@@ -80,13 +86,18 @@ public class BlobService {
      * Creates a new blob file.
      *
      * @param body The content for the new file.
-     * @return The name of the new file.
+     * @param fileName The name of the new file.
+     * @return The state was file created or not.
      */
-    public String createBlobFile(String body) {
-        String fileName = generateFilename();
-        BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
-        blobClient.upload(BinaryData.fromString(body), false);
-        return fileName;
+    public boolean createBlobFile(String body, String fileName) {
+        try {
+            BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
+            blobClient.upload(BinaryData.fromString(body), false);
+        } catch (Exception e){
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -97,16 +108,5 @@ public class BlobService {
     public String status(){
         if (blobContainerClient.exists()) return "blob ok";
         else return "blob not okay";
-    }
-
-    /**
-     * Generates a filename for a new blob file.
-     *
-     * @return The generated filename.
-     */
-    private static String generateFilename() {
-        long timestamp = Instant.now().toEpochMilli();
-        int randomNumber = new Random().nextInt(9000) + 1000;
-        return timestamp + "_" + randomNumber + ".txt";
     }
 }

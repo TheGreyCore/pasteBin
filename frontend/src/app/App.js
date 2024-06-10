@@ -1,9 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import EditPage from "./EditPage";
-import MainPage from "./mainpage/MainPage";
-import ErrorPage from "./ErrorPage";
-import SuccessfullPage from "./successfullpage/SuccessfullPage";
+import EditPage from "../edit/EditPage";
+import MainPage from "../mainpage/MainPage";
+import ErrorPage from "../ErrorPage";
+import Profile from "../profile/Profile";
 
 function App() {
     return (
@@ -12,7 +12,7 @@ function App() {
                 <Route path="/edit/:binURL" Component={EditPage} />
                 <Route path="*" Component={MainPage} />
                 <Route path="/error" Component={ErrorPage} />
-                <Route path="/successfully" Component={SuccessfullPage} />
+                <Route path="/profile" Component={Profile} />
             </Routes>
         </Router>
     );

@@ -22,4 +22,7 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
 
     @Query("SELECT blobFileName FROM Storage WHERE uniqIdentificatorOfCreator = ?1")
     Optional<List<String>> findAllByIndificator(String uniqIdentificatorOfCreator);
+
+    @Query("SELECT uniqIdentificatorOfCreator FROM Storage WHERE blobFileName = ?1")
+    String findOwnerByBlobFileName(String fileName);
 }

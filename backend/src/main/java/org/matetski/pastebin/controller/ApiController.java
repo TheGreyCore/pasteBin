@@ -1,6 +1,7 @@
 package org.matetski.pastebin.controller;
 
 import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
+import org.matetski.pastebin.dto.UpdateBlobFileDTO;
 import org.matetski.pastebin.service.ApiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,6 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Rest Controller for handling API requests.
@@ -47,10 +49,14 @@ public class ApiController {
      * @throws IOException If an I/O error occurs. TODO: Better exception handling
      */
     @GetMapping("/getBinByURL")
-    private ResponseEntity<String> getBinByURL(@RequestParam String url) throws IOException {
+    private ResponseEntity<Map<String, String>> getBinByURL(@RequestParam String url) throws IOException {
         return apiService.getBinByURL(url);
     }
 
+    @PostMapping("/updateBlob")
+    private ResponseEntity<?> updateBlob(@RequestBody UpdateBlobFileDTO updateBlobFileDTO, @AuthenticationPrincipal OAuth2User principal){
+        return apiService.updateBlob(updateBlobFileDTO, principal);
+    }
 
     @GetMapping("/user")
     private ResponseEntity<?> getUserData(@AuthenticationPrincipal OAuth2User principal){

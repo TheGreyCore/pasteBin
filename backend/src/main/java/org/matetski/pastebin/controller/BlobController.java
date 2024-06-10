@@ -2,6 +2,7 @@ package org.matetski.pastebin.controller;
 
 import org.matetski.pastebin.service.BlobService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +33,9 @@ public class BlobController {
      * This method is annotated with @GetMapping to indicate that it is a GET request.
      * @return The status of the blob service.
      */
-    @GetMapping("/api")
+    @GetMapping("/status")
     public String status(){
         return this.blobService.status();
     }
+
 }

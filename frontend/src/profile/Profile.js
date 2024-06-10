@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Card, Dropdown} from "react-bootstrap";
 
-const SuccesfullPage = () => {
+const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [selectedExpireTime, setSelectedExpireTime] = useState('7');
 
@@ -89,4 +89,4 @@ const SuccesfullPage = () => {
     )
 }
 
-export default SuccesfullPage;
+export default Profile;
