@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, Dropdown} from "react-bootstrap";
+import {Alert, Button, Card, Dropdown} from "react-bootstrap";
+import URLCards from "./urlcard/URLCards";
+import "./Profile.css"
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
@@ -11,7 +13,6 @@ const Profile = () => {
             {method: 'GET', credentials: 'include'}
         ).then((res) => { return res.json();})
             .then((responseData) => {
-                console.log(responseData)
                 setUserData(responseData)})
             .catch(error => handleErrors(error));
     }, []);
@@ -59,30 +60,36 @@ const Profile = () => {
                 <div className="label-box">
                     <h1 className="">Welcome to the simple pasteBin!</h1>
                     <br></br>
-                    <h5>Hello {userData ? userData.first_name: <>Unknown</>}!</h5>
+                    <h4>Hello {userData ? userData.first_name: <>Unknown</>}!</h4>
+                    <Alert variant="danger">Please, do not save/share any sensitive/private information (passwords, secrets, keys e.t.c) and remember that all pasteBins are public!</Alert>
                     <hr></hr>
-                    <Card style={{ width: '18rem' }}>
-                        <Card.Body>
-                            <Card.Title>Create a new bin</Card.Title>
-                            <Card.Text>
-                                You can create {3-(userData ? userData.binNames.length: 0)} more bins.
-                                <hr></hr>
-                                Select expire time. (In days)
-                            </Card.Text>
-                            <Dropdown onSelect={handleExpireTimeSelect}>
-                                <Dropdown.Toggle variant="success" id="dropdown-basic">
-                                    {selectedExpireTime} days
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item eventKey="1">1 day</Dropdown.Item>
-                                    <Dropdown.Item eventKey="3">3 days</Dropdown.Item>
-                                    <Dropdown.Item eventKey="7">7 days</Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                            <hr></hr>
-                            <Button variant="primary" onClick={handleCreateANewBin} disabled={!userData || userData.binNames.length - 3 >= 0}>Create!</Button>
-                        </Card.Body>
-                    </Card>
+
+                    <div className="card-container">
+                            <Card style={{ width: '18rem' }}>
+                                <Card.Body>
+                                    <Card.Title>Create a new bin</Card.Title>
+                                    <Card.Text>
+                                        You can create {3-(userData ? userData.binNames.length: 3)} more bins.
+                                        <hr></hr>
+                                        Select expire time. (In days)
+                                    </Card.Text>
+                                    <Dropdown onSelect={handleExpireTimeSelect}>
+                                        <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                            {selectedExpireTime} days
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            <Dropdown.Item eventKey="1">1 day</Dropdown.Item>
+                                            <Dropdown.Item eventKey="3">3 days</Dropdown.Item>
+                                            <Dropdown.Item eventKey="7">7 days</Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                    <hr></hr>
+                                    <Button variant="primary" onClick={handleCreateANewBin} disabled={!userData || userData.binNames.length - 3 >= 0}>Create!</Button>
+                                </Card.Body>
+                            </Card>
+
+                            {userData ? <> <URLCards urls={userData.binNames} /> </> : <></>}
+                    </div>
                 </div>
             </div>
         </div>

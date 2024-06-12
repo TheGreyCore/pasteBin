@@ -5,6 +5,7 @@ import {useParams} from "react-router-dom";
 
 const EditPage = () => {
     let params = useParams();
+    const [sharedButtonClicked, setSharedButtonClicked] = useState(false);
     const [userData, setUserData] = useState(null);
     const [fileContent, setFileContent] = useState(null);
 
@@ -39,10 +40,6 @@ const EditPage = () => {
     }
 
     const handleSave = async () => {
-        //setFileContent(document.getElementById("content-textarea").value);
-        // Just for debbuging TODO: Replace
-        console.log(fileContent);
-        // TODO: await fetch to backend to save bin
         const url = 'http://localhost:8080/api/updateBlob';
         const data = {
             body: fileContent,
@@ -80,6 +77,16 @@ const EditPage = () => {
         // TODO: await fetch to backend to delete bin
     }
 
+    function handleShare() {
+        setSharedButtonClicked(!sharedButtonClicked);
+        let link = "localhost:3000/share/" + params.binURL;
+        navigator.clipboard.writeText(link).then().catch(ignore => {
+            window.location.href = link
+        });
+
+        document.getElementById("share-button").innerText = "Link copied!"
+    }
+
     return (
         <div>
             <div className="content-box">
@@ -96,6 +103,7 @@ const EditPage = () => {
                 <ButtonGroup aria-label="Basic example">
                     <Button variant="secondary" onClick={handleSave}>Save</Button>
                     <Button variant="secondary" onClick={handleDelete}>Delete</Button>
+                    <Button id="share-button" variant="success" onClick={handleShare}>Share</Button>
                     <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown"
                                     variant="secondary">
                         {/*TODO: Get all saved bins and make dropdown link for them*/}

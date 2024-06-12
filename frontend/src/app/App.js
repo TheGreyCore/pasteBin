@@ -4,6 +4,7 @@ import EditPage from "../edit/EditPage";
 import MainPage from "../mainpage/MainPage";
 import ErrorPage from "../ErrorPage";
 import Profile from "../profile/Profile";
+import SharePage from "../share/SharePage";
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                 <Route path="*" Component={MainPage} />
                 <Route path="/error" Component={ErrorPage} />
                 <Route path="/profile" Component={Profile} />
+                <Route path="/share/:binURL" Component={SharePage} />
             </Routes>
         </Router>
     );
