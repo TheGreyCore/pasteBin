@@ -115,15 +115,44 @@ public class ApiService {
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * Method for updating blob file content by overwriting them.
+     * @param updateBlobFileDTO Data representation.
+     * @param principal principal of logged user.
+     */
     public ResponseEntity<?> updateBlob(UpdateBlobFileDTO updateBlobFileDTO, OAuth2User principal) {
         // Check if user can update this blob
-        String userId = principal.getAttribute("sub");
-        if(!Objects.equals(userId, storageRepository.findOwnerByBlobFileName(updateBlobFileDTO.getFileName()))){
+        if(checkIfUserOwner(principal, updateBlobFileDTO.getFileName()))
             return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
-        }
 
         boolean wasUpdated = blobService.updateBlobFile(updateBlobFileDTO);
         if(wasUpdated) return ResponseEntity.ok().body("ok");
         else return ResponseEntity.internalServerError().body("Not ok :(");
+    }
+
+    /**
+     * Method for deleting bin file and metadata.
+     * @param principal represents a logged-in user
+     * @param url url to be deleted
+     * @return //TODO: void instead of responseEntity.
+     */
+    public ResponseEntity<?> deleteBin(OAuth2User principal, String url) {
+        if(checkIfUserOwner(principal, url))
+            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
+
+        blobService.deleteBlobFile(url);
+
+        return ResponseEntity.ok().body("Deleted");
+    }
+
+    /**
+     * Help method for checking if the given user is owner of the bin.
+     * @param principal represents a logged-in user
+     * @param url bin to be checked
+     * @return true if owner, false if not owner.
+     */
+    private boolean checkIfUserOwner(OAuth2User principal, String url){
+        String userId = principal.getAttribute("sub");
+        return !Objects.equals(userId, storageRepository.findOwnerByBlobFileName(url));
     }
 }

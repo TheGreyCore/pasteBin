@@ -1,5 +1,6 @@
 package org.matetski.pastebin.configuration;
 
+import jakarta.annotation.PostConstruct;
 import org.matetski.pastebin.service.StorageService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -25,6 +26,14 @@ public class BinDeleterConfiguration {
     private final StorageService storageService;
 
     /**
+     * After starting project, check expired bins and delete them.
+     */
+    @PostConstruct
+    public void init() {
+        deleteExpiryDate();
+    }
+
+    /**
      * Constructor for BinDeleterConfiguration.
      * @param storageService An instance of StorageService.
      */
@@ -34,10 +43,9 @@ public class BinDeleterConfiguration {
 
     /**
      * Scheduled task for deleting expired data.
-     * This method is annotated with @Scheduled to indicate that it is a scheduled task.
-     * The cron expression "0 50 23 * * ?" specifies running code every day at 23.50 by Estonian time.
+     * The cron expression specifies running code every day at 00.01 by Estonian time.
      */
-    @Scheduled(cron = "0 50 23 * * ?", zone = "EET")
+    @Scheduled(cron = "0 01 00 * * ?", zone = "EET")
     public void deleteExpiryDate(){
         logger.info(storageService.checkExpiryData());
     }

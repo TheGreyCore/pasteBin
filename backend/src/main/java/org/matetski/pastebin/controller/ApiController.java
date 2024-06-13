@@ -42,8 +42,7 @@ public class ApiController {
     }
 
     /**
-     * Endpoint for getting a bin by URL.
-     * This method is annotated with @GetMapping to indicate that it is a GET request.
+     * GET Endpoint for getting a bin by URL.
      * @param url The URL of the bin to retrieve.
      * @return A ResponseEntity with the result of the operation.
      * @throws IOException If an I/O error occurs. TODO: Better exception handling
@@ -61,5 +60,15 @@ public class ApiController {
     @GetMapping("/user")
     private ResponseEntity<?> getUserData(@AuthenticationPrincipal OAuth2User principal){
         return apiService.getUserData(principal);
+    }
+
+    /**
+     * DELETE endpoint for deleting a bin by URL
+     * @param principal Represent logged user.
+     * @param url Bin URL
+     */
+    @DeleteMapping("/deleteBin")
+    private ResponseEntity<?> deleteBin(@AuthenticationPrincipal OAuth2User principal, @RequestParam String url){
+        return apiService.deleteBin(principal, url);
     }
 }

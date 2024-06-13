@@ -60,6 +60,7 @@ public class StorageService{
      * @return The number of bins that were deleted.
      */
     public String checkExpiryData() {
+        System.out.println(LocalDate.now());
         Optional<List<String>> expiryData = storageRepository.findAllIdByExpireDate(LocalDate.now());
         if (expiryData.isEmpty()) return "0 bins was deleted.";
 
