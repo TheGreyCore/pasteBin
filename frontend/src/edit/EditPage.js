@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import {Button, Dropdown, DropdownButton} from "react-bootstrap";
 import {useParams} from "react-router-dom";
+import Nav from "react-bootstrap/Nav";
+import NavbarComponent from "../navbar/Navbar";
 
 const EditPage = () => {
     let params = useParams();
@@ -68,13 +70,15 @@ const EditPage = () => {
     }
 
     const handleDelete = async () => {
-        document.getElementById("filename-textarea").value = '';
-        document.getElementById("content-textarea").value = '';
-        setFileContent(null);
-
-        // Just for debbuging TODO: Replace
-        console.log(fileContent);
-        // TODO: await fetch to backend to delete bin
+        const confirmDelete = window.confirm('Are you sure you want to delete this bin?');
+        if (confirmDelete) {
+            await fetch(
+                "http://localhost:8080/api/deleteBin?url=" + params.binURL,
+                {method: 'DELETE', credentials: 'include'}
+            ).then((res) => {
+                window.location.href = "/profile"
+            });
+        }
     }
 
     function handleShare() {
@@ -89,6 +93,7 @@ const EditPage = () => {
 
     return (
         <div>
+            <NavbarComponent name={userData ? userData.first_name : "Unknown"} family_name={userData ? userData.family_name : "Unknown"}></NavbarComponent>
             <div className="content-box">
                 <h1 className="">Welcome, {userData ? userData.first_name : <>Unknown</>}!</h1>
                 <hr></hr>
@@ -110,7 +115,6 @@ const EditPage = () => {
                         <Dropdown.Item eventKey="1">Dropdown link</Dropdown.Item>
                         <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>
                     </DropdownButton>
-                    <Button variant="secondary" onClick={handleLogout}>Log out</Button>
                 </ButtonGroup>
             </div>
             <br/>

@@ -140,6 +140,7 @@ public class ApiService {
         if(checkIfUserOwner(principal, url))
             return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
 
+        storageRepository.deleteByBlobName(url);
         blobService.deleteBlobFile(url);
 
         return ResponseEntity.ok().body("Deleted");
