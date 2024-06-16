@@ -5,6 +5,7 @@ import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import org.matetski.pastebin.dto.UpdateBlobFileDTO;
+import org.matetski.pastebin.exceptions.BlobWasNotCreated;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -87,17 +88,15 @@ public class BlobService {
      *
      * @param body The content for the new file.
      * @param fileName The name of the new file.
-     * @return The state was file created or not.
+     * @throws BlobWasNotCreated When some error appears.
      */
-    public boolean createBlobFile(String body, String fileName) {
+    public void createBlobFile(String body, String fileName) throws BlobWasNotCreated {
         try {
             BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
             blobClient.upload(BinaryData.fromString(body), false);
         } catch (Exception e){
-            return false;
+            throw new BlobWasNotCreated(e);
         }
-
-        return true;
     }
 
     /**

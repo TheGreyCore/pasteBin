@@ -2,13 +2,16 @@ package org.matetski.pastebin.controller;
 
 import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
 import org.matetski.pastebin.dto.UpdateBlobFileDTO;
+import org.matetski.pastebin.exceptions.AccountLimitReached;
 import org.matetski.pastebin.service.ApiService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Map;
 
 /**
@@ -38,7 +41,12 @@ public class ApiController {
      */
     @PostMapping("/createNewBin")
     private ResponseEntity<?> createNewBin(@RequestBody CreateNewBinRequestDTO requestDTO, @AuthenticationPrincipal OAuth2User principal){
-        return apiService.createNewBin(requestDTO, principal);
+        try {
+            String createdUrl = apiService.createNewBin(requestDTO, principal);
+            return new ResponseEntity<>(createdUrl, HttpStatus.CREATED);
+        } catch (AccountLimitReached e) {
+            return new ResponseEntity<>("You have exceeded your allotted paste creation limit.", HttpStatus.TOO_MANY_REQUESTS);
+        }
     }
 
     /**

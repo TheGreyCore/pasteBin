@@ -1,6 +1,8 @@
 package org.matetski.pastebin.service;
 
 import org.matetski.pastebin.dto.UpdateBlobFileDTO;
+import org.matetski.pastebin.exceptions.AccountLimitReached;
+import org.matetski.pastebin.exceptions.BlobWasNotCreated;
 import org.matetski.pastebin.repository.StorageRepository;
 import org.matetski.pastebin.dto.CreateNewBinRequestDTO;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Service class for handling API related operations.
@@ -34,6 +37,8 @@ public class ApiService {
      */
     private final StorageRepository storageRepository;
 
+    Logger logger = Logger.getLogger(ApiService.class.getName());
+
     /**
      * Constructor for ApiService.
      * @param storageService An instance of StorageService.
@@ -52,17 +57,21 @@ public class ApiService {
      * @param principal principal of logged user.
      * @return A ResponseEntity with the result of the operation.
      */
-    public ResponseEntity<?> createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) {
-        if (!storageService.userCanCreateMore(principal.getAttribute("sub"))) return ResponseEntity.accepted().body("User can not create more bins!");
+    public String createNewBin(CreateNewBinRequestDTO request, OAuth2User principal) throws AccountLimitReached, BlobWasNotCreated {
+        if (!storageService.userCanCreateMore(principal.getAttribute("sub")))
+            throw new AccountLimitReached("User reached his limit.");
 
         LocalDate expiryDate = LocalDate.now().plusDays(request.getExpireTimeInDays());
 
-        String fileName = generateFilename();
-        boolean blobWasCreated = blobService.createBlobFile(request.getBody(), fileName);
-        if (!blobWasCreated) return ResponseEntity.internalServerError().body(Collections.singletonMap("error",  "Blob wasn't created!"));
-        storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
-
-        return ResponseEntity.ok().body(Collections.singletonMap("url", fileName));
+        try {
+            String fileName = generateFilename();
+            blobService.createBlobFile(request.getBody(), fileName);
+            storageService.createStorage(fileName, principal.getAttribute("sub"), expiryDate);
+            return fileName;
+        } catch (BlobWasNotCreated e) {
+            logger.warning("An exception was thrown: " + e);
+            throw new BlobWasNotCreated("Blob was not created due to error! Please wait sometime and try again!");
+        }
     }
 
     /**
