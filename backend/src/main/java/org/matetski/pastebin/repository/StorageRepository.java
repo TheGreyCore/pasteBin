@@ -29,4 +29,7 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
 
     @Query("SELECT uniqIdentificatorOfCreator FROM Storage WHERE blobFileName = ?1")
     String findOwnerByBlobFileName(String fileName);
+
+    @Query("SELECT expireDate FROM Storage WHERE blobFileName = ?1")
+    LocalDate findExpireDateByBlobFileName(String blobFileName);
 }

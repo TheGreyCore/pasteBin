@@ -1,0 +1,14 @@
+body, html{
+    background: #31363F;
+    color: #EEEEEE;
+}
+
+#root {
+    margin: 0;
+}
+
+.tool-box {
+    padding: 1vh;
+    text-align: center;
+}
+

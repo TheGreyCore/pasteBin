@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import ButtonGroup from "react-bootstrap/ButtonGroup";
-import {Button, Dropdown, DropdownButton} from "react-bootstrap";
+import {Alert, Button, Dropdown, DropdownButton} from "react-bootstrap";
 import {useParams} from "react-router-dom";
-import Nav from "react-bootstrap/Nav";
 import NavbarComponent from "../navbar/Navbar";
+import "../static/css/main.css"
+import FooterComponent from "../footer/Footer";
+
 
 const EditPage = () => {
+    let backEndURL = "http://localhost:8080"
+    let frontEndURL = "http://loclahost:3000"
     let params = useParams();
     const [sharedButtonClicked, setSharedButtonClicked] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -13,36 +17,27 @@ const EditPage = () => {
 
     useEffect(() => {
         fetch(
-            'http://localhost:8080/api/user',
+            backEndURL + '/api/user',
             {method: 'GET', credentials: 'include'}
         ).then((res) => { return res.json();})
             .then((responseData) => {
             setUserData(responseData)})
             .catch(error => handleErrors(error));
         fetch(
-            "http://localhost:8080/api/getBinByURL?url=" + params.binURL,
-            {method: 'GET'}
+            backEndURL + "/api/getPasteByURL?url=" + params.binURL,
+            {method: 'GET', redirect:'manual'}
         ).then((res) => { return res.json();})
             .then((responseData) => {
                 setFileContent(responseData.body)})
             .catch(error => handleErrors(error));
-    }, [params.binURL]);
+    }, [backEndURL, params.binURL]);
 
     const handleErrors = (error) => {
-        console.error('Error:', error);
-        window.location.href = "/error";
-    }
-
-    const handleLogout = async () => {
-        await fetch(
-            'http://localhost:8080/logout',
-            { method: 'POST', redirect: "follow", credentials: 'include'})
-            setUserData(null);
-            window.location.href = "/";
+        window.location.href= `/error/400/${btoa(error)}`
     }
 
     const handleSave = async () => {
-        const url = 'http://localhost:8080/api/updateBlob';
+        const url = backEndURL + '/api/updatePaste';
         const data = {
             body: fileContent,
             fileName: params.binURL,
@@ -59,11 +54,12 @@ const EditPage = () => {
                 body: JSON.stringify(data),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             const responseData = await response.json();
-            console.log(responseData)
+
+            if (!response.ok) {
+                window.location.href= `/error/${response.status}/${btoa(responseData.body["errorMessage"])}`
+            }
+
         } catch (error) {
             console.error('Error:', error);
         }
@@ -73,7 +69,7 @@ const EditPage = () => {
         const confirmDelete = window.confirm('Are you sure you want to delete this bin?');
         if (confirmDelete) {
             await fetch(
-                "http://localhost:8080/api/deleteBin?url=" + params.binURL,
+                backEndURL + "/api/deletePaste?url=" + params.binURL,
                 {method: 'DELETE', credentials: 'include'}
             ).then((res) => {
                 window.location.href = "/profile"
@@ -83,7 +79,7 @@ const EditPage = () => {
 
     function handleShare() {
         setSharedButtonClicked(!sharedButtonClicked);
-        let link = "localhost:3000/share/" + params.binURL;
+        let link = frontEndURL + "/share/" + params.binURL;
         navigator.clipboard.writeText(link).then().catch(ignore => {
             window.location.href = link
         });
@@ -91,17 +87,18 @@ const EditPage = () => {
         document.getElementById("share-button").innerText = "Link copied!"
     }
 
+    const handleSelect = (url) => {
+        window.location.href = "/edit/" + url
+    }
+
     return (
-        <div>
-            <NavbarComponent name={userData ? userData.first_name : "Unknown"} family_name={userData ? userData.family_name : "Unknown"}></NavbarComponent>
+        <>
+            <NavbarComponent></NavbarComponent>
             <div className="content-box">
-                <h1 className="">Welcome, {userData ? userData.first_name : <>Unknown</>}!</h1>
-                <hr></hr>
-                <h6>File content:</h6>
                 <textarea
                     className="form-control"
                     id="content-textarea"
-                    rows="5"
+                    rows="15"
                     value={fileContent}
                     onChange={e => setFileContent(e.target.value)}
                 />
@@ -109,16 +106,20 @@ const EditPage = () => {
                     <Button variant="secondary" onClick={handleSave}>Save</Button>
                     <Button variant="secondary" onClick={handleDelete}>Delete</Button>
                     <Button id="share-button" variant="success" onClick={handleShare}>Share</Button>
-                    <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown"
+                    <DropdownButton as={ButtonGroup} title="Saved paste" id="bg-nested-dropdown"
                                     variant="secondary">
-                        {/*TODO: Get all saved bins and make dropdown link for them*/}
-                        <Dropdown.Item eventKey="1">Dropdown link</Dropdown.Item>
-                        <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>
+                        {userData ? userData.binNames.map((url, index) => (
+                            <Dropdown.Item eventKey={index} onClick={() => handleSelect(url)}>PasteBin number {index + 1}</Dropdown.Item>
+                        )) : <></>
+                        }
                     </DropdownButton>
                 </ButtonGroup>
             </div>
             <br/>
-        </div>
+            <Alert variant="danger">Please, do not save/share any sensitive/private information (passwords,
+                secrets, keys e.t.c) and remember that all pasteBins are public!</Alert>
+            <FooterComponent></FooterComponent>
+        </>
     );
 }
 

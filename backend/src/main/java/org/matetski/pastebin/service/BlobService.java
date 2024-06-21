@@ -4,12 +4,15 @@ package org.matetski.pastebin.service;
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import org.matetski.pastebin.dto.UpdateBlobFileDTO;
+import com.azure.storage.blob.models.BlobStorageException;
+import org.matetski.pastebin.dto.UpdatePasteFileDTO;
+import org.matetski.pastebin.exceptions.BlobWasNotCreated;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InaccessibleObjectException;
+import java.util.logging.Logger;
 
 /**
  * Service class for managing blobs in Azure Blob Storage.
@@ -36,20 +39,24 @@ public class BlobService {
     }
 
     /**
+     * Logger for logging exceptions.
+     */
+    Logger logger = Logger.getLogger(BlobService.class.getName());
+
+    /**
      * Updates the content of a blob file.
      *
-     * @param updateBlobFileDTO Represent an request DTO.
-     * @return
+     * @param updatePasteFileDTO Represent an request DTO.
      */
-    public boolean updateBlobFile(UpdateBlobFileDTO updateBlobFileDTO){
+    public void updateBlobFile(UpdatePasteFileDTO updatePasteFileDTO){
         try {
-            System.out.println(updateBlobFileDTO.getFileName());
-            System.out.println(updateBlobFileDTO.getBody());
-            BlobClient blobClient = blobContainerClient.getBlobClient(updateBlobFileDTO.getFileName() + ".txt");
-            blobClient.upload(BinaryData.fromString(updateBlobFileDTO.getBody()), true);
-            return true;
-        } catch (Exception e){
-            return false;
+            System.out.println(updatePasteFileDTO.getFileName());
+            System.out.println(updatePasteFileDTO.getBody());
+            BlobClient blobClient = blobContainerClient.getBlobClient(updatePasteFileDTO.getFileName() + ".txt");
+            blobClient.upload(BinaryData.fromString(updatePasteFileDTO.getBody()), true);
+        } catch (BlobStorageException e){
+            logger.warning("An exception was thrown: " + e);
+            throw new InternalError("An internal error occurred!");
         }
     }
 
@@ -60,15 +67,11 @@ public class BlobService {
      * @return The content of the file.
      * @throws IOException If an I/O error occurs.
      */
-    public String readBlobFile(String fileName) throws IOException {
+    public String readBlobFile(String fileName) throws IOException, InaccessibleObjectException {
         BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
             blobClient.downloadStream(outputStream);
             return outputStream.toString();
-        }
-        catch (InaccessibleObjectException error)
-        {
-            return null;
         }
     }
 
@@ -87,17 +90,15 @@ public class BlobService {
      *
      * @param body The content for the new file.
      * @param fileName The name of the new file.
-     * @return The state was file created or not.
+     * @throws BlobWasNotCreated When some error appears.
      */
-    public boolean createBlobFile(String body, String fileName) {
+    public void createBlobFile(String body, String fileName) throws BlobWasNotCreated {
         try {
             BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
             blobClient.upload(BinaryData.fromString(body), false);
         } catch (Exception e){
-            return false;
+            throw new BlobWasNotCreated(e);
         }
-
-        return true;
     }
 
     /**

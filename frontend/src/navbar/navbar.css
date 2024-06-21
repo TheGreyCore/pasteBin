@@ -1,0 +1,32 @@
+.navbar{
+    min-width: 100%;
+    min-height: 100%;
+    position: relative;
+    background-color: #222831;
+    height: 5em;
+    grid-row: 1;
+}
+
+.navbar-brand{
+    color: aquamarine;
+    font-size: 2em;
+
+}
+
+.navbar-text {
+    color: #76ABAE;
+}
+
+.navbar-text a{
+    color: #76c4ce;
+}
+
+.navbar button{
+    margin: 2em;
+}
+
+.navbar-div{
+    margin: 0;
+    box-shadow: 0.1vh 0.1vw 1vh #222831;
+}
+
