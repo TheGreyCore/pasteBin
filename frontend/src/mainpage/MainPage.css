@@ -1,15 +1,1 @@
-.label-box h1 {
-    text-align: center;
-}
 
-.content-box {
-    display: grid;
-    grid-auto-flow: row;
-    grid-row-gap: 1vh;
-    padding: 5vh;
-}
-
-.tool-box {
-    padding: 1vh;
-    text-align: center;
-}

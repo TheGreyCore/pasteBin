@@ -5,13 +5,9 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class CreateNewBinRequestDTO {
+public class CreateNewPasteRequestDTO {
     private String body;
     private Integer expireTimeInDays;
-
-    public boolean isValid(){
-        return body != null && expireTimeInDays != null;
-    }
 
     @Override
     public String toString() {

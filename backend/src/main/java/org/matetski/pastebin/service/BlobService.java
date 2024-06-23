@@ -4,13 +4,15 @@ package org.matetski.pastebin.service;
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.models.BlobStorageException;
+import org.matetski.pastebin.dto.UpdatePasteFileDTO;
+import org.matetski.pastebin.exceptions.BlobWasNotCreated;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InaccessibleObjectException;
-import java.time.Instant;
-import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Service class for managing blobs in Azure Blob Storage.
@@ -37,14 +39,25 @@ public class BlobService {
     }
 
     /**
+     * Logger for logging exceptions.
+     */
+    Logger logger = Logger.getLogger(BlobService.class.getName());
+
+    /**
      * Updates the content of a blob file.
      *
-     * @param fileName The name of the file.
-     * @param body The new content for the file.
+     * @param updatePasteFileDTO Represent an request DTO.
      */
-    public void updateBlobFile(String fileName, String body){
-        BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
-        blobClient.upload(BinaryData.fromString(body), true);
+    public void updateBlobFile(UpdatePasteFileDTO updatePasteFileDTO){
+        try {
+            System.out.println(updatePasteFileDTO.getFileName());
+            System.out.println(updatePasteFileDTO.getBody());
+            BlobClient blobClient = blobContainerClient.getBlobClient(updatePasteFileDTO.getFileName() + ".txt");
+            blobClient.upload(BinaryData.fromString(updatePasteFileDTO.getBody()), true);
+        } catch (BlobStorageException e){
+            logger.warning("An exception was thrown: " + e);
+            throw new InternalError("An internal error occurred!");
+        }
     }
 
     /**
@@ -54,15 +67,11 @@ public class BlobService {
      * @return The content of the file.
      * @throws IOException If an I/O error occurs.
      */
-    public String readBlobFile(String fileName) throws IOException {
+    public String readBlobFile(String fileName) throws IOException, InaccessibleObjectException {
         BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
             blobClient.downloadStream(outputStream);
             return outputStream.toString();
-        }
-        catch (InaccessibleObjectException error)
-        {
-            return null;
         }
     }
 
@@ -80,13 +89,16 @@ public class BlobService {
      * Creates a new blob file.
      *
      * @param body The content for the new file.
-     * @return The name of the new file.
+     * @param fileName The name of the new file.
+     * @throws BlobWasNotCreated When some error appears.
      */
-    public String createBlobFile(String body) {
-        String fileName = generateFilename();
-        BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
-        blobClient.upload(BinaryData.fromString(body), false);
-        return fileName;
+    public void createBlobFile(String body, String fileName) throws BlobWasNotCreated {
+        try {
+            BlobClient blobClient = blobContainerClient.getBlobClient(fileName + fileFormat);
+            blobClient.upload(BinaryData.fromString(body), false);
+        } catch (Exception e){
+            throw new BlobWasNotCreated(e);
+        }
     }
 
     /**
@@ -97,16 +109,5 @@ public class BlobService {
     public String status(){
         if (blobContainerClient.exists()) return "blob ok";
         else return "blob not okay";
-    }
-
-    /**
-     * Generates a filename for a new blob file.
-     *
-     * @return The generated filename.
-     */
-    private static String generateFilename() {
-        long timestamp = Instant.now().toEpochMilli();
-        int randomNumber = new Random().nextInt(9000) + 1000;
-        return timestamp + "_" + randomNumber + ".txt";
     }
 }

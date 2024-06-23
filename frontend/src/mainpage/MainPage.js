@@ -3,9 +3,11 @@ import {Alert, AlertLink, Button, Dropdown, DropdownButton} from "react-bootstra
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import './MainPage.css';
 import {useParams} from "react-router-dom";
+import NavbarComponent from "../navbar/Navbar";
+import FooterComponent from "../footer/Footer";
 
 const MainPage = () => {
-    const { params } = useParams();
+    let backEndURL = "http://localhost:8080";
     const [fileContent, setFileContent] = useState("");
     const files = [
         {Filename: "Example bin 1.", fileContent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."},
@@ -14,48 +16,57 @@ const MainPage = () => {
 
     const handleSelect = (key) => {
         setFileContent(files[key].fileContent);
-        console.log(fileContent)
     };
 
     async function handleLogin() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/github";
+        window.location.href = backEndURL + "/oauth2/authorization/google";
     }
 
     return(
-        <div>
+        <>
+            <NavbarComponent></NavbarComponent>
             <div className="content-box">
 
                 <div className="label-box">
                     <h1 className="">Welcome to the simple pasteBin!</h1>
                     <br></br>
-                    <h5>This is an example of an actual web page for those who don't want to log in to test the
+                    <h5>Bellow is an example of an actual web page for those who don't want to log in to test the
                         application.</h5>
+                    <hr></hr>
+                    <Alert variant="warning" onClick={handleLogin}>If you want to test application in live,
+                        please <AlertLink>log in</AlertLink> using Google oauth2. </Alert>
                     <hr></hr>
                 </div>
                 <div className="edit-box">
-                    <Alert variant="warning" onClick={handleLogin}>If you want to test application in live,
-                        please <AlertLink>log in</AlertLink> using GitHub oauth2. </Alert>
-                    <h6>Your pasteBin content:</h6>
-                    <textarea id="file-content-textarea" className="form-control" rows="7">{fileContent}</textarea>
+                    <textarea
+                        className="form-control"
+                        id="content-textarea"
+                        rows="15"
+                        value={fileContent}
+                        onChange={e => setFileContent(e.target.value)}
+                    />
                     <div className="tool-box">
                         <ButtonGroup aria-label="Basic example">
                             <Button variant="secondary">Save</Button>
                             <Button variant="secondary">Delete</Button>
+                            <Button id="share-button" variant="success">Share</Button>
                             <DropdownButton as={ButtonGroup} title="Saved documents" id="bg-nested-dropdown"
                                             variant="secondary" onSelect={handleSelect}>
                                 {files.map((file, index) => (
-                                    <Dropdown.Item onSelect={handleSelect} eventKey={index}>{file.Filename}</Dropdown.Item>
+                                    <Dropdown.Item onSelect={handleSelect}
+                                                   eventKey={index}>{file.Filename}</Dropdown.Item>
                                 ))}
                             </DropdownButton>
-                            <Button variant="secondary">Log out</Button>
                         </ButtonGroup>
                     </div>
 
                 </div>
 
-                <Alert variant="info">We use oauth2 login only to limit application load. This site has been created for demonstration purposes only. Read more about project...</Alert>
+                <Alert variant="info">We use oauth2 login only to limit application load. This site has been created for
+                    demonstration purposes only. Read more about project...</Alert>
             </div>
-        </div>
+            <FooterComponent></FooterComponent>
+        </>
     )
 }
 

@@ -40,7 +40,7 @@ public class StorageService{
      * @return true if the user can create more storage, false otherwise.
      */
     public boolean userCanCreateMore(String uniqIdentificator){
-        return storageRepository.countUserData(uniqIdentificator) < 3;
+        return storageRepository.countUserData(uniqIdentificator) < 3; // TODO: Change to 3
     }
 
     /**
@@ -60,6 +60,7 @@ public class StorageService{
      * @return The number of bins that were deleted.
      */
     public String checkExpiryData() {
+        System.out.println(LocalDate.now());
         Optional<List<String>> expiryData = storageRepository.findAllIdByExpireDate(LocalDate.now());
         if (expiryData.isEmpty()) return "0 bins was deleted.";
 
